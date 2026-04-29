@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marketplace | RecyTech</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="container nav">
+      <a class="brand" href="/"><img src="/assets/logo.svg" alt="RecyTech"></a>
+      <nav class="nav-links">
+        <a href="/marketplace.html">Marketplace</a>
+        <a href="/sell.html">Sell E-Waste</a>
+        <a href="/dashboard.html">Dashboard</a>
+        <a href="/about.html">About</a>
+      </nav>
+      <div class="nav-actions" data-nav-actions></div>
+    </div>
+  </header>
+  <main>
+    <section class="page-hero">
+      <div class="container page-title">
+        <h1>Marketplace</h1>
+        <p>Find repairable devices, usable components, and recyclable electronics across Indian cities.</p>
+      </div>
+    </section>
+    <section class="section">
+      <div class="container">
+        <form class="toolbar" data-filters>
+          <input class="input" name="q" placeholder="Search laptop, mobile board, charger...">
+          <select class="select" name="category">
+            <option value="">All categories</option>
+            <option>Laptop</option><option>Mobile</option><option>Desktop</option><option>Monitor</option><option>Motherboard/PCB</option><option>RAM</option><option>Battery</option><option>Charger</option><option>Keyboard</option><option>Bulk Scrap</option><option>Other</option>
+          </select>
+          <select class="select" name="condition">
+            <option value="">Any condition</option>
+            <option>Working</option><option>Repairable</option><option>For Parts</option><option>Scrap</option>
+          </select>
+          <input class="input" name="city" placeholder="City">
+          <button class="btn blue">Search</button>
+        </form>
+        <div class="section-head">
+          <p class="muted" data-count>0 listings</p>
+          <button class="btn secondary" type="button" data-reset>Reset filters</button>
+        </div>
+        <div class="grid-3" data-listings></div>
+      </div>
+    </section>
+  </main>
+  <footer class="footer"><div class="container">RecyTech marketplace for e-waste and reusable electronic parts.</div></footer>
+  <script src="/js/api.js"></script>
+  <script src="/js/main.js"></script>
+  <script src="/js/marketplace.js"></script>
+</body>
+</html>
+

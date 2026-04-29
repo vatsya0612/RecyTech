@@ -1,0 +1,6 @@
+<svg width="164" height="44" viewBox="0 0 164 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="44" height="44" rx="10" fill="#102A43"/>
+  <path d="M12 27.5C16 35 28.5 35.5 33 27.5L35 24M35 24H28M35 24V31" stroke="#40C057" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M32 16.5C28 9 15.5 8.5 11 16.5L9 20M9 20H16M9 20V13" stroke="#2F80ED" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="55" y="28" font-family="Arial, sans-serif" font-size="22" font-weight="800" fill="#102A43">RecyTech</text>
+</svg>

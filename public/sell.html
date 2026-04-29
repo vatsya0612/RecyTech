@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sell E-Waste | RecyTech</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="container nav">
+      <a class="brand" href="/"><img src="/assets/logo.svg" alt="RecyTech"></a>
+      <nav class="nav-links">
+        <a href="/marketplace.html">Marketplace</a>
+        <a href="/sell.html">Sell E-Waste</a>
+        <a href="/dashboard.html">Dashboard</a>
+        <a href="/about.html">About</a>
+      </nav>
+      <div class="nav-actions" data-nav-actions></div>
+    </div>
+  </header>
+  <main>
+    <section class="page-hero">
+      <div class="container page-title">
+        <h1>Sell E-Waste</h1>
+        <p>Create a verified listing for old electronics, repairable parts, or recyclable scrap and receive real money from buyers.</p>
+      </div>
+    </section>
+    <section class="section">
+      <div class="container layout">
+        <aside class="panel">
+          <h2>Estimated Value</h2>
+          <div class="price" data-estimate>₹0</div>
+          <p class="muted">The estimate updates from category, condition, age, and quantity. You can still set your own expected price.</p>
+        </aside>
+        <form class="panel form-grid" data-sell-form>
+          <div class="form-field">
+            <label>Product title</label>
+            <input class="input" name="title" required placeholder="Dell laptop for parts">
+          </div>
+          <div class="form-field">
+            <label>Brand</label>
+            <input class="input" name="brand" placeholder="Dell, HP, Samsung">
+          </div>
+          <div class="form-field">
+            <label>Category</label>
+            <select class="select" name="category" required>
+              <option>Laptop</option><option>Mobile</option><option>Desktop</option><option>Monitor</option><option>Motherboard/PCB</option><option>RAM</option><option>Battery</option><option>Charger</option><option>Keyboard</option><option>Bulk Scrap</option><option>Other</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Condition</label>
+            <select class="select" name="condition" required>
+              <option>Working</option><option>Repairable</option><option>For Parts</option><option>Scrap</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>City</label>
+            <input class="input" name="city" required placeholder="Jaipur">
+          </div>
+          <div class="form-field">
+            <label>State</label>
+            <input class="input" name="state" placeholder="Rajasthan">
+          </div>
+          <div class="form-field">
+            <label>Expected price</label>
+            <input class="input" name="price" type="number" min="0" placeholder="Leave blank for estimate">
+          </div>
+          <div class="form-field">
+            <label>Quantity</label>
+            <input class="input" name="quantity" type="number" min="1" value="1">
+          </div>
+          <div class="form-field">
+            <label>Age in years</label>
+            <input class="input" name="ageYears" type="number" min="0" value="3">
+          </div>
+          <div class="form-field">
+            <label>Image path</label>
+            <input class="input" name="image" value="/assets/device-placeholder.svg">
+          </div>
+          <div class="form-field full">
+            <label>Reusable components</label>
+            <input class="input" name="materialTags" placeholder="RAM, charging IC, copper, display panel">
+          </div>
+          <div class="form-field full">
+            <label>Description</label>
+            <textarea class="textarea" name="description" required placeholder="Mention what works, what is damaged, and what buyers can reuse."></textarea>
+          </div>
+          <div class="full">
+            <button class="btn green">Submit for review</button>
+            <div data-sell-alert></div>
+          </div>
+        </form>
+      </div>
+    </section>
+  </main>
+  <script src="/js/api.js"></script>
+  <script src="/js/sell.js"></script>
+</body>
+</html>
+

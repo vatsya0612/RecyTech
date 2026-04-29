@@ -1,0 +1,20 @@
+{
+  "name": "recytech",
+  "version": "1.0.0",
+  "description": "India-first e-waste marketplace connecting sellers, repair shops, refurbishers, and recyclers.",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "node server/server.js",
+    "seed": "node server/seed.js"
+  },
+  "keywords": [
+    "e-waste",
+    "marketplace",
+    "recycling",
+    "vanilla-js",
+    "node"
+  ],
+  "author": "Aditya Watts",
+  "license": "MIT"
+}

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin | RecyTech</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="container nav">
+      <a class="brand" href="/"><img src="/assets/logo.svg" alt="RecyTech"></a>
+      <nav class="nav-links">
+        <a href="/marketplace.html">Marketplace</a>
+        <a href="/sell.html">Sell E-Waste</a>
+        <a href="/dashboard.html">Dashboard</a>
+        <a href="/about.html">About</a>
+      </nav>
+      <div class="nav-actions" data-nav-actions></div>
+    </div>
+  </header>
+  <main>
+    <section class="page-hero">
+      <div class="container page-title">
+        <h1>Admin Review</h1>
+        <p>Approve, reject, and manage marketplace listings before they appear to buyers.</p>
+      </div>
+    </section>
+    <section class="section">
+      <div class="container" data-admin>
+        <div class="metric-grid" data-admin-stats></div>
+        <div class="panel table-wrap" style="margin-top:28px">
+          <table>
+            <thead><tr><th>Listing</th><th>Seller</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody data-admin-listings></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="/js/api.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>
+
