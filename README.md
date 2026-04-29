@@ -33,3 +33,14 @@ Seller: seller@recytech.in / seller123
 Buyer: buyer@recytech.in / buyer123
 ```
 
+## Deploy On Vercel
+
+1. Push this repository to GitHub.
+2. Open Vercel and choose **Add New Project**.
+3. Import the `RecyTech` GitHub repository.
+4. Keep the framework preset as **Other**.
+5. Deploy.
+
+The frontend is served from `public/`, and `/api/*` requests are handled by the Vercel serverless function in `api/index.js`.
+
+Note: the current demo uses file-based storage. On Vercel, demo data can reset when serverless functions restart. For production, connect MongoDB Atlas or another hosted database.

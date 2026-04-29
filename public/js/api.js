@@ -60,7 +60,6 @@ const RecyTechAPI = (() => {
     if (!user) {
       mount.innerHTML = `
         <a class="btn secondary" href="/login.html">Login</a>
-        <a class="btn green" href="/login.html?mode=register">Join</a>
       `;
       return;
     }
@@ -91,4 +90,3 @@ const RecyTechAPI = (() => {
 })();
 
 document.addEventListener("DOMContentLoaded", RecyTechAPI.renderNav);
-

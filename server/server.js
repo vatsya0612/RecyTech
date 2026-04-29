@@ -7,7 +7,7 @@ const { seedDatabase } = require("./seed");
 const PORT = process.env.PORT || 3000;
 const ROOT = path.join(__dirname, "..");
 const PUBLIC_DIR = path.join(ROOT, "public");
-const DATA_DIR = path.join(ROOT, "data");
+const DATA_DIR = process.env.VERCEL ? path.join("/tmp", "recytech-data") : path.join(ROOT, "data");
 const DB_PATH = path.join(DATA_DIR, "db.json");
 
 const MIME_TYPES = {
@@ -53,7 +53,7 @@ function parseBody(req) {
     let body = "";
     req.on("data", chunk => {
       body += chunk;
-      if (body.length > 1_500_000) {
+      if (body.length > 6_000_000) {
         reject(new Error("Request body is too large"));
         req.destroy();
       }
@@ -246,7 +246,7 @@ async function handleApi(req, res, pathname, query) {
     const user = requireUser(req, res, db);
     if (!user) return;
     const body = await parseBody(req);
-    const required = ["title", "category", "condition", "city", "description"];
+    const required = ["title", "category", "condition", "city", "description", "image"];
     if (required.some(field => !String(body[field] || "").trim())) {
       return sendError(res, 400, "Title, category, condition, city, and description are required");
     }
@@ -265,7 +265,7 @@ async function handleApi(req, res, pathname, query) {
       ageYears: Number(body.ageYears || 3),
       image: String(body.image || "/assets/device-placeholder.svg").trim(),
       description: body.description.trim(),
-      status: "Pending",
+      status: "Approved",
       materialTags: Array.isArray(body.materialTags) ? body.materialTags.slice(0, 8) : [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -389,7 +389,7 @@ function serveStatic(req, res, pathname) {
   fs.createReadStream(filePath).pipe(res);
 }
 
-const server = http.createServer(async (req, res) => {
+async function requestHandler(req, res) {
   try {
     const url = new URL(req.url, `http://${req.headers.host}`);
     const query = Object.fromEntries(url.searchParams.entries());
@@ -401,10 +401,17 @@ const server = http.createServer(async (req, res) => {
   } catch (error) {
     sendError(res, 500, error.message || "Server error");
   }
-});
+}
 
 ensureDb();
-server.listen(PORT, () => {
-  console.log(`RecyTech running at http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  const server = http.createServer(requestHandler);
+  server.listen(PORT, () => {
+    console.log(`RecyTech running at http://localhost:${PORT}`);
+  });
+}
 
+module.exports = {
+  handleApi,
+  requestHandler
+};

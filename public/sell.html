@@ -23,7 +23,7 @@
     <section class="page-hero">
       <div class="container page-title">
         <h1>Sell E-Waste</h1>
-        <p>Create a verified listing for old electronics, repairable parts, or recyclable scrap and receive real money from buyers.</p>
+        <p>Post your old electronics, repairable parts, or recyclable scrap so repair shops and recyclers can buy directly from you.</p>
       </div>
     </section>
     <section class="section">
@@ -75,8 +75,12 @@
             <input class="input" name="ageYears" type="number" min="0" value="3">
           </div>
           <div class="form-field">
-            <label>Image path</label>
-            <input class="input" name="image" value="/assets/device-placeholder.svg">
+            <label>Product photo</label>
+            <input class="input" name="photo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" required>
+          </div>
+          <div class="form-field">
+            <label>Photo preview</label>
+            <img class="upload-preview" src="/assets/device-placeholder.svg" alt="Selected product preview" data-photo-preview>
           </div>
           <div class="form-field full">
             <label>Reusable components</label>
@@ -87,7 +91,7 @@
             <textarea class="textarea" name="description" required placeholder="Mention what works, what is damaged, and what buyers can reuse."></textarea>
           </div>
           <div class="full">
-            <button class="btn green">Submit for review</button>
+            <button class="btn green">Post listing for sale</button>
             <div data-sell-alert></div>
           </div>
         </form>
@@ -98,4 +102,3 @@
   <script src="/js/sell.js"></script>
 </body>
 </html>
-
