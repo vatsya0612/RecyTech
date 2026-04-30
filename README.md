@@ -33,6 +33,24 @@ Seller: seller@recytech.in / seller123
 Buyer: buyer@recytech.in / buyer123
 ```
 
+## Email OTP Setup
+
+Create account uses OTP verification.
+
+For local testing without email settings, RecyTech shows a test OTP on the create account page. To send real OTP emails for free with Gmail SMTP, create a `.env` file using `.env.example`:
+
+```text
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-gmail-app-password
+SMTP_FROM=your-email@gmail.com
+```
+
+On Vercel, add the same values in **Project Settings > Environment Variables**.
+
+Use a Gmail App Password, not your normal Gmail password.
+
 ## Deploy On Vercel
 
 1. Push this repository to GitHub.

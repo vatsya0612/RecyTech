@@ -10,6 +10,23 @@ const PUBLIC_DIR = path.join(ROOT, "public");
 const DATA_DIR = process.env.VERCEL ? path.join("/tmp", "recytech-data") : path.join(ROOT, "data");
 const DB_PATH = path.join(DATA_DIR, "db.json");
 
+function loadEnvFile() {
+  const envPath = path.join(ROOT, ".env");
+  if (!fs.existsSync(envPath)) return;
+  const lines = fs.readFileSync(envPath, "utf8").split(/\r?\n/);
+  lines.forEach(line => {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) return;
+    const separator = trimmed.indexOf("=");
+    if (separator === -1) return;
+    const key = trimmed.slice(0, separator).trim();
+    const value = trimmed.slice(separator + 1).trim().replace(/^["']|["']$/g, "");
+    if (key && process.env[key] === undefined) process.env[key] = value;
+  });
+}
+
+loadEnvFile();
+
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
@@ -29,7 +46,13 @@ function ensureDb() {
 
 function readDb() {
   ensureDb();
-  return JSON.parse(fs.readFileSync(DB_PATH, "utf8"));
+  const db = JSON.parse(fs.readFileSync(DB_PATH, "utf8"));
+  if (!Array.isArray(db.pendingOtps)) db.pendingOtps = [];
+  if (!Array.isArray(db.sessions)) db.sessions = [];
+  if (!Array.isArray(db.users)) db.users = [];
+  if (!Array.isArray(db.listings)) db.listings = [];
+  if (!Array.isArray(db.inquiries)) db.inquiries = [];
+  return db;
 }
 
 function writeDb(db) {
@@ -78,6 +101,14 @@ function hashPassword(password, salt = crypto.randomBytes(16).toString("hex")) {
   return `${salt}:${hash}`;
 }
 
+function hashOtp(otp) {
+  return crypto.createHash("sha256").update(String(otp)).digest("hex");
+}
+
+function createOtp() {
+  return String(crypto.randomInt(100000, 999999));
+}
+
 function verifyPassword(password, stored) {
   const [salt, expected] = stored.split(":");
   const actual = hashPassword(password, salt).split(":")[1];
@@ -87,6 +118,103 @@ function verifyPassword(password, stored) {
 function publicUser(user) {
   const { passwordHash, ...safeUser } = user;
   return safeUser;
+}
+
+function validateRegistration(body) {
+  const required = ["name", "email", "password", "role", "city", "phone"];
+  if (required.some(field => !String(body[field] || "").trim())) {
+    return "All fields are required";
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(body.email))) {
+    return "Please enter a valid email address";
+  }
+  if (String(body.password).length < 6) {
+    return "Password must be at least 6 characters";
+  }
+  return "";
+}
+
+function getSmtpConfig() {
+  const config = {
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT || 465),
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+    from: process.env.SMTP_FROM || process.env.SMTP_USER
+  };
+  return Object.values(config).every(Boolean) ? config : null;
+}
+
+function readSmtpResponse(socket) {
+  return new Promise((resolve, reject) => {
+    let data = "";
+    const onData = chunk => {
+      data += chunk.toString();
+      const lines = data.trimEnd().split(/\r?\n/);
+      const last = lines[lines.length - 1] || "";
+      if (/^\d{3} /.test(last)) {
+        socket.off("data", onData);
+        socket.off("error", onError);
+        resolve(data);
+      }
+    };
+    const onError = error => {
+      socket.off("data", onData);
+      reject(error);
+    };
+    socket.on("data", onData);
+    socket.on("error", onError);
+  });
+}
+
+async function sendSmtpCommand(socket, command) {
+  if (command) socket.write(`${command}\r\n`);
+  const response = await readSmtpResponse(socket);
+  const code = Number(response.slice(0, 3));
+  if (code >= 400) throw new Error(response.trim());
+  return response;
+}
+
+async function sendOtpEmail(to, otp) {
+  const smtp = getSmtpConfig();
+  if (!smtp) return { sent: false, reason: "SMTP is not configured" };
+
+  const tls = require("tls");
+  const socket = tls.connect({
+    host: smtp.host,
+    port: smtp.port,
+    servername: smtp.host
+  });
+
+  await new Promise((resolve, reject) => {
+    socket.once("secureConnect", resolve);
+    socket.once("error", reject);
+  });
+
+  const message = [
+    `From: RecyTech <${smtp.from}>`,
+    `To: ${to}`,
+    "Subject: Your RecyTech verification OTP",
+    "MIME-Version: 1.0",
+    "Content-Type: text/plain; charset=utf-8",
+    "",
+    `Your RecyTech OTP is ${otp}. It expires in 10 minutes.`,
+    "",
+    "If you did not request this, you can ignore this email."
+  ].join("\r\n");
+
+  await sendSmtpCommand(socket);
+  await sendSmtpCommand(socket, "EHLO recytech.local");
+  await sendSmtpCommand(socket, "AUTH LOGIN");
+  await sendSmtpCommand(socket, Buffer.from(smtp.user).toString("base64"));
+  await sendSmtpCommand(socket, Buffer.from(smtp.pass).toString("base64"));
+  await sendSmtpCommand(socket, `MAIL FROM:<${smtp.from}>`);
+  await sendSmtpCommand(socket, `RCPT TO:<${to}>`);
+  await sendSmtpCommand(socket, "DATA");
+  await sendSmtpCommand(socket, `${message}\r\n.`);
+  await sendSmtpCommand(socket, "QUIT");
+  socket.end();
+  return { sent: true };
 }
 
 function getAuthUser(req, db) {
@@ -178,25 +306,89 @@ async function handleApi(req, res, pathname, query) {
   const db = readDb();
 
   if (req.method === "POST" && pathname === "/api/auth/register") {
+    return sendError(res, 410, "Use OTP verification to create an account");
+  }
+
+  if (req.method === "POST" && pathname === "/api/auth/request-otp") {
     const body = await parseBody(req);
-    const required = ["name", "email", "password", "role", "city", "phone"];
-    if (required.some(field => !String(body[field] || "").trim())) {
-      return sendError(res, 400, "All fields are required");
-    }
-    if (db.users.some(user => user.email.toLowerCase() === body.email.toLowerCase())) {
+    const validationError = validateRegistration(body);
+    if (validationError) return sendError(res, 400, validationError);
+
+    const email = body.email.trim().toLowerCase();
+    if (db.users.some(user => user.email.toLowerCase() === email)) {
       return sendError(res, 409, "Email is already registered");
     }
+
+    const otp = createOtp();
+    const pendingId = createId("otp");
+    db.pendingOtps = db.pendingOtps.filter(item => item.email !== email && new Date(item.expiresAt) > new Date());
+    db.pendingOtps.push({
+      id: pendingId,
+      email,
+      otpHash: hashOtp(otp),
+      attempts: 0,
+      user: {
+        name: body.name.trim(),
+        email,
+        passwordHash: hashPassword(body.password),
+        role: ["buyer", "seller", "recycler"].includes(body.role) ? body.role : "buyer",
+        city: body.city.trim(),
+        phone: body.phone.trim()
+      },
+      expiresAt: new Date(Date.now() + 1000 * 60 * 10).toISOString(),
+      createdAt: new Date().toISOString()
+    });
+    writeDb(db);
+
+    let emailResult;
+    try {
+      emailResult = await sendOtpEmail(email, otp);
+    } catch (error) {
+      emailResult = { sent: false, reason: error.message };
+    }
+
+    return sendJson(res, 200, {
+      pendingId,
+      email,
+      emailSent: emailResult.sent,
+      message: emailResult.sent ? "OTP sent to your email" : "OTP generated. Configure SMTP to send email automatically.",
+      devOtp: emailResult.sent ? undefined : otp
+    });
+  }
+
+  if (req.method === "POST" && pathname === "/api/auth/verify-otp") {
+    const body = await parseBody(req);
+    const pending = db.pendingOtps.find(item => item.id === body.pendingId);
+    if (!pending) return sendError(res, 404, "OTP request not found. Please request a new OTP.");
+    if (new Date(pending.expiresAt) < new Date()) {
+      db.pendingOtps = db.pendingOtps.filter(item => item.id !== pending.id);
+      writeDb(db);
+      return sendError(res, 400, "OTP expired. Please request a new OTP.");
+    }
+    if (pending.attempts >= 5) {
+      db.pendingOtps = db.pendingOtps.filter(item => item.id !== pending.id);
+      writeDb(db);
+      return sendError(res, 429, "Too many wrong attempts. Please request a new OTP.");
+    }
+    if (hashOtp(body.otp) !== pending.otpHash) {
+      pending.attempts += 1;
+      writeDb(db);
+      return sendError(res, 400, "Invalid OTP");
+    }
+    if (db.users.some(user => user.email.toLowerCase() === pending.email)) {
+      db.pendingOtps = db.pendingOtps.filter(item => item.id !== pending.id);
+      writeDb(db);
+      return sendError(res, 409, "Email is already registered");
+    }
+
     const user = {
       id: createId("usr"),
-      name: body.name.trim(),
-      email: body.email.trim().toLowerCase(),
-      passwordHash: hashPassword(body.password),
-      role: ["buyer", "seller", "recycler"].includes(body.role) ? body.role : "buyer",
-      city: body.city.trim(),
-      phone: body.phone.trim(),
+      ...pending.user,
+      emailVerified: true,
       createdAt: new Date().toISOString()
     };
     db.users.push(user);
+    db.pendingOtps = db.pendingOtps.filter(item => item.id !== pending.id);
     const token = createId("tok");
     db.sessions.push({ token, userId: user.id, expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7).toISOString() });
     writeDb(db);

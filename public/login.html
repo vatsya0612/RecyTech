@@ -22,38 +22,15 @@
     <section class="card auth-panel">
       <aside class="auth-aside">
         <h1>RecyTech</h1>
-        <p>Login to buy or sell e-waste. New users can create a seller, buyer, or recycler account from this same page.</p>
+        <p>Login to buy or sell e-waste. New users can create an account with email OTP verification.</p>
         <p><strong>Admin</strong><br>admin@recytech.in / admin123</p>
         <p><strong>Seller</strong><br>seller@recytech.in / seller123</p>
         <p><strong>Buyer</strong><br>buyer@recytech.in / buyer123</p>
       </aside>
-      <form class="card-body form-grid" data-auth-form>
-        <input type="hidden" name="mode" value="login">
+      <form class="card-body form-grid" data-login-form>
         <div class="full">
-          <h2 data-auth-title>Welcome back</h2>
+          <h2>Welcome back</h2>
           <div data-auth-alert></div>
-        </div>
-        <div class="form-grid full" data-register-fields>
-          <div class="form-field">
-            <label>Name</label>
-            <input class="input" name="name" placeholder="Aditya Watts">
-          </div>
-          <div class="form-field">
-            <label>Phone</label>
-            <input class="input" name="phone" placeholder="+91 98765 43210">
-          </div>
-          <div class="form-field">
-            <label>City</label>
-            <input class="input" name="city" placeholder="Jaipur">
-          </div>
-          <div class="form-field">
-            <label>Role</label>
-            <select class="select" name="role">
-              <option value="seller">Seller</option>
-              <option value="buyer">Buyer</option>
-              <option value="recycler">Recycler</option>
-            </select>
-          </div>
         </div>
         <div class="form-field full">
           <label>Email</label>
@@ -64,8 +41,8 @@
           <input class="input" name="password" type="password" required placeholder="••••••••">
         </div>
         <div class="full form-row">
-          <button class="btn green" data-auth-submit>Login</button>
-          <button class="btn secondary" type="button" data-switch>New here? Create account</button>
+          <button class="btn green">Login</button>
+          <a class="btn secondary" href="/create-account.html">New here? Create account</a>
         </div>
       </form>
     </section>

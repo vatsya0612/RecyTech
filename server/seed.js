@@ -140,6 +140,7 @@ function seedDatabase(dbPath = path.join(__dirname, "..", "data", "db.json")) {
   const db = {
     users,
     sessions: [],
+    pendingOtps: [],
     listings,
     inquiries: [
       {

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account | RecyTech</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="container nav">
+      <a class="brand" href="/"><img src="/assets/logo.svg" alt="RecyTech"></a>
+      <nav class="nav-links">
+        <a href="/marketplace.html">Marketplace</a>
+        <a href="/sell.html">Sell E-Waste</a>
+        <a href="/about.html">About</a>
+      </nav>
+      <div class="nav-actions" data-nav-actions></div>
+    </div>
+  </header>
+  <main class="auth-shell">
+    <section class="card auth-panel">
+      <aside class="auth-aside">
+        <h1>Create Account</h1>
+        <p>Register your email with OTP verification before buying or selling on RecyTech.</p>
+        <p><strong>Step 1</strong><br>Fill your profile and request OTP.</p>
+        <p><strong>Step 2</strong><br>Enter the OTP sent to your email.</p>
+      </aside>
+      <form class="card-body form-grid" data-register-form>
+        <div class="full">
+          <h2>Create your RecyTech account</h2>
+          <div data-auth-alert></div>
+        </div>
+        <div class="form-field">
+          <label>Name</label>
+          <input class="input" name="name" required placeholder="Aditya Watts">
+        </div>
+        <div class="form-field">
+          <label>Phone</label>
+          <input class="input" name="phone" required placeholder="+91 98765 43210">
+        </div>
+        <div class="form-field">
+          <label>City</label>
+          <input class="input" name="city" required placeholder="Jaipur">
+        </div>
+        <div class="form-field">
+          <label>Role</label>
+          <select class="select" name="role" required>
+            <option value="seller">Seller</option>
+            <option value="buyer">Buyer</option>
+            <option value="recycler">Recycler</option>
+          </select>
+        </div>
+        <div class="form-field full">
+          <label>Email</label>
+          <input class="input" name="email" type="email" required placeholder="you@example.com">
+        </div>
+        <div class="form-field full">
+          <label>Password</label>
+          <input class="input" name="password" type="password" required minlength="6" placeholder="At least 6 characters">
+        </div>
+        <div class="full form-row">
+          <button class="btn green">Send OTP</button>
+          <a class="btn secondary" href="/login.html">Already have an account?</a>
+        </div>
+      </form>
+
+      <form class="card-body form-grid" data-otp-form hidden>
+        <div class="full">
+          <h2>Verify your email</h2>
+          <p class="muted" data-otp-copy>Enter the 6-digit OTP sent to your email.</p>
+          <div data-otp-alert></div>
+        </div>
+        <input type="hidden" name="pendingId">
+        <div class="form-field full">
+          <label>OTP</label>
+          <input class="input otp-input" name="otp" required inputmode="numeric" maxlength="6" placeholder="123456">
+        </div>
+        <div class="full form-row">
+          <button class="btn green">Verify and create account</button>
+          <button class="btn secondary" type="button" data-edit-email>Edit details</button>
+        </div>
+      </form>
+    </section>
+  </main>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+</body>
+</html>

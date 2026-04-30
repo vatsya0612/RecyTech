@@ -1,39 +1,73 @@
-function setAuthMode(mode) {
-  const isRegister = mode === "register";
-  document.querySelector("[data-register-fields]").style.display = isRegister ? "grid" : "none";
-  document.querySelector("[data-auth-title]").textContent = isRegister ? "Create your RecyTech account" : "Welcome back";
-  document.querySelector("[data-auth-submit]").textContent = isRegister ? "Create account" : "Login";
-  document.querySelector("[name=mode]").value = mode;
-  document.querySelector("[data-switch]").textContent = isRegister ? "Already registered? Login" : "New here? Create account";
+function showAuthAlert(selector, message, type = "") {
+  const mount = document.querySelector(selector);
+  if (!mount) return;
+  mount.innerHTML = `<div class="alert ${type}">${message}</div>`;
+}
+
+function getNextUrl() {
+  return new URLSearchParams(location.search).get("next") || "/dashboard.html";
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const params = new URLSearchParams(location.search);
-  setAuthMode(params.get("mode") === "register" ? "register" : "login");
+  const loginForm = document.querySelector("[data-login-form]");
+  const registerForm = document.querySelector("[data-register-form]");
+  const otpForm = document.querySelector("[data-otp-form]");
 
-  document.querySelector("[data-switch]")?.addEventListener("click", () => {
-    const mode = document.querySelector("[name=mode]").value === "login" ? "register" : "login";
-    setAuthMode(mode);
-  });
-
-  document.querySelector("[data-auth-form]")?.addEventListener("submit", async event => {
+  loginForm?.addEventListener("submit", async event => {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const mode = form.get("mode");
-    const payload = Object.fromEntries(form.entries());
-    const alert = document.querySelector("[data-auth-alert]");
-    alert.innerHTML = "";
+    const payload = Object.fromEntries(new FormData(loginForm).entries());
     try {
-      const data = await RecyTechAPI.request(mode === "register" ? "/api/auth/register" : "/api/auth/login", {
+      const data = await RecyTechAPI.request("/api/auth/login", {
         method: "POST",
         body: JSON.stringify(payload)
       });
       RecyTechAPI.setSession(data);
-      const next = new URLSearchParams(location.search).get("next") || "/dashboard.html";
-      location.href = next;
+      location.href = getNextUrl();
     } catch (error) {
-      alert.innerHTML = `<div class="alert error">${error.message}</div>`;
+      showAuthAlert("[data-auth-alert]", error.message, "error");
     }
   });
-});
 
+  registerForm?.addEventListener("submit", async event => {
+    event.preventDefault();
+    const payload = Object.fromEntries(new FormData(registerForm).entries());
+    try {
+      const data = await RecyTechAPI.request("/api/auth/request-otp", {
+        method: "POST",
+        body: JSON.stringify(payload)
+      });
+      registerForm.hidden = true;
+      otpForm.hidden = false;
+      otpForm.elements.pendingId.value = data.pendingId;
+      document.querySelector("[data-otp-copy]").textContent = data.emailSent
+        ? `Enter the 6-digit OTP sent to ${data.email}.`
+        : `Email sending is not configured yet. For testing, use OTP ${data.devOtp}.`;
+      showAuthAlert(
+        "[data-otp-alert]",
+        data.emailSent ? "OTP sent successfully. Please check your inbox." : "Test OTP generated successfully."
+      );
+    } catch (error) {
+      showAuthAlert("[data-auth-alert]", error.message, "error");
+    }
+  });
+
+  otpForm?.addEventListener("submit", async event => {
+    event.preventDefault();
+    const payload = Object.fromEntries(new FormData(otpForm).entries());
+    try {
+      const data = await RecyTechAPI.request("/api/auth/verify-otp", {
+        method: "POST",
+        body: JSON.stringify(payload)
+      });
+      RecyTechAPI.setSession(data);
+      location.href = getNextUrl();
+    } catch (error) {
+      showAuthAlert("[data-otp-alert]", error.message, "error");
+    }
+  });
+
+  document.querySelector("[data-edit-email]")?.addEventListener("click", () => {
+    otpForm.hidden = true;
+    registerForm.hidden = false;
+  });
+});
