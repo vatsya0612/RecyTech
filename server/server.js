@@ -179,17 +179,32 @@ async function sendOtpEmail(to, otp) {
   const smtp = getSmtpConfig();
   if (!smtp) return { sent: false, reason: "SMTP is not configured" };
 
+  const net = require("net");
   const tls = require("tls");
-  const socket = tls.connect({
-    host: smtp.host,
-    port: smtp.port,
-    servername: smtp.host
-  });
+  let socket;
 
-  await new Promise((resolve, reject) => {
-    socket.once("secureConnect", resolve);
-    socket.once("error", reject);
-  });
+  if (smtp.port === 465) {
+    socket = tls.connect({
+      host: smtp.host,
+      port: smtp.port,
+      servername: smtp.host
+    });
+
+    await new Promise((resolve, reject) => {
+      socket.once("secureConnect", resolve);
+      socket.once("error", reject);
+    });
+  } else {
+    socket = net.connect({
+      host: smtp.host,
+      port: smtp.port
+    });
+
+    await new Promise((resolve, reject) => {
+      socket.once("connect", resolve);
+      socket.once("error", reject);
+    });
+  }
 
   const message = [
     `From: RecyTech <${smtp.from}>`,
@@ -205,6 +220,18 @@ async function sendOtpEmail(to, otp) {
 
   await sendSmtpCommand(socket);
   await sendSmtpCommand(socket, "EHLO recytech.local");
+  if (smtp.port !== 465) {
+    await sendSmtpCommand(socket, "STARTTLS");
+    socket = tls.connect({
+      socket,
+      servername: smtp.host
+    });
+    await new Promise((resolve, reject) => {
+      socket.once("secureConnect", resolve);
+      socket.once("error", reject);
+    });
+    await sendSmtpCommand(socket, "EHLO recytech.local");
+  }
   await sendSmtpCommand(socket, "AUTH LOGIN");
   await sendSmtpCommand(socket, Buffer.from(smtp.user).toString("base64"));
   await sendSmtpCommand(socket, Buffer.from(smtp.pass).toString("base64"));
