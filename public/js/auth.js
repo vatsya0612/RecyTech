@@ -39,10 +39,10 @@ document.addEventListener("DOMContentLoaded", () => {
       registerForm.hidden = true;
       otpForm.hidden = false;
       otpForm.elements.pendingId.value = data.pendingId;
-      const otpHint = data.devOtp ? ` For testing, use OTP ${data.devOtp}.` : "";
+      const otpHint = data.devOtp ? ` Test OTP: ${data.devOtp}.` : "";
       document.querySelector("[data-otp-copy]").textContent = data.emailSent
-        ? `Enter the 6-digit OTP sent to ${data.email}.${otpHint}`
-        : `Email sending is not configured yet.${otpHint}`;
+        ? `Enter the 6-digit OTP sent to ${data.email}.`
+        : `Enter the OTP for ${data.email}.${otpHint}`;
       showAuthAlert(
         "[data-otp-alert]",
         data.emailSent ? "OTP sent successfully. Please check your inbox." : "Test OTP generated successfully."
