@@ -379,7 +379,7 @@ async function handleApi(req, res, pathname, query) {
       email,
       emailSent: emailResult.sent,
       message: emailResult.sent ? "OTP sent to your email" : "OTP generated. Configure SMTP to send email automatically.",
-      devOtp: emailResult.sent ? undefined : otp
+      devOtp: process.env.VERCEL ? (emailResult.sent ? undefined : otp) : otp
     });
   }
 

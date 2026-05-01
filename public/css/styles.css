@@ -82,7 +82,6 @@ img {
 .brand img {
   width: 180px;
   height: auto;
-  filter: brightness(0) invert(1);
 }
 
 .nav-links {

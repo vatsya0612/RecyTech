@@ -64,7 +64,7 @@ const RecyTechAPI = (() => {
       return;
     }
     mount.innerHTML = `
-      <a class="btn secondary" href="/dashboard.html">${user.name.split(" ")[0]}</a>
+      <a class="btn secondary" href="/marketplace.html">${user.name.split(" ")[0]}</a>
       ${user.role === "admin" ? '<a class="btn blue" href="/admin.html">Admin</a>' : ""}
       <button class="btn" data-logout>Logout</button>
     `;

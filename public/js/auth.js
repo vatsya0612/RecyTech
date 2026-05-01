@@ -5,7 +5,7 @@ function showAuthAlert(selector, message, type = "") {
 }
 
 function getNextUrl() {
-  return new URLSearchParams(location.search).get("next") || "/dashboard.html";
+  return new URLSearchParams(location.search).get("next") || "/marketplace.html";
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -39,9 +39,10 @@ document.addEventListener("DOMContentLoaded", () => {
       registerForm.hidden = true;
       otpForm.hidden = false;
       otpForm.elements.pendingId.value = data.pendingId;
+      const otpHint = data.devOtp ? ` For testing, use OTP ${data.devOtp}.` : "";
       document.querySelector("[data-otp-copy]").textContent = data.emailSent
-        ? `Enter the 6-digit OTP sent to ${data.email}.`
-        : `Email sending is not configured yet. For testing, use OTP ${data.devOtp}.`;
+        ? `Enter the 6-digit OTP sent to ${data.email}.${otpHint}`
+        : `Email sending is not configured yet.${otpHint}`;
       showAuthAlert(
         "[data-otp-alert]",
         data.emailSent ? "OTP sent successfully. Please check your inbox." : "Test OTP generated successfully."
