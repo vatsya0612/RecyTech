@@ -16,5 +16,8 @@
     "node"
   ],
   "author": "Aditya Vatsya",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "firebase-admin": "^13.8.0"
+  }
 }

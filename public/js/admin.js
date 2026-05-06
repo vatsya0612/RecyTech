@@ -7,10 +7,10 @@ async function updateStatus(id, status) {
 }
 
 async function loadAdmin() {
-  if (!RecyTechAPI.requireAuth()) return;
+  if (!(await RecyTechAPI.requireAuth())) return;
   const user = RecyTechAPI.getUser();
   if (user.role !== "admin") {
-    document.querySelector("[data-admin]").innerHTML = `<div class="alert error">Admin access required. Login with admin@recytech.in.</div>`;
+    document.querySelector("[data-admin]").innerHTML = `<div class="alert error">Admin access required. Sign in with a Firebase account that has the admin role.</div>`;
     return;
   }
   try {
@@ -40,4 +40,3 @@ async function loadAdmin() {
 }
 
 document.addEventListener("DOMContentLoaded", loadAdmin);
-

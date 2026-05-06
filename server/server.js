@@ -2,6 +2,7 @@ const http = require("http");
 const path = require("path");
 const fs = require("fs");
 const crypto = require("crypto");
+const admin = require("firebase-admin");
 const { seedDatabase } = require("./seed");
 
 const PORT = process.env.PORT || 3000;
@@ -26,6 +27,46 @@ function loadEnvFile() {
 }
 
 loadEnvFile();
+
+let firebaseAuthClient = null;
+
+function initFirebaseAdmin() {
+  if (firebaseAuthClient) return firebaseAuthClient;
+  if (admin.apps.length) {
+    firebaseAuthClient = admin.auth();
+    return firebaseAuthClient;
+  }
+
+  const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
+  if (serviceAccountPath && fs.existsSync(serviceAccountPath)) {
+    const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, "utf8"));
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+    firebaseAuthClient = admin.auth();
+    return firebaseAuthClient;
+  }
+
+  const projectId = process.env.FIREBASE_PROJECT_ID;
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY
+    ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n")
+    : "";
+
+  if (projectId && clientEmail && privateKey) {
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId,
+        clientEmail,
+        privateKey
+      })
+    });
+    firebaseAuthClient = admin.auth();
+    return firebaseAuthClient;
+  }
+
+  return null;
+}
 
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -118,6 +159,44 @@ function verifyPassword(password, stored) {
 function publicUser(user) {
   const { passwordHash, ...safeUser } = user;
   return safeUser;
+}
+
+function normalizeRole(role) {
+  return ["buyer", "seller", "recycler", "admin"].includes(role) ? role : "buyer";
+}
+
+function upsertFirebaseUser(db, decodedToken, profile = {}) {
+  let user = db.users.find(item => item.firebaseUid === decodedToken.uid || item.email.toLowerCase() === String(decodedToken.email || "").toLowerCase());
+  const nextName = String(profile.name || decodedToken.name || user?.name || decodedToken.email || "RecyTech User").trim();
+  const nextRole = normalizeRole(profile.role || user?.role || "buyer");
+  const nextCity = String(profile.city || user?.city || "").trim();
+  const nextPhone = String(profile.phone || user?.phone || "").trim();
+
+  if (!user) {
+    user = {
+      id: createId("usr"),
+      firebaseUid: decodedToken.uid,
+      name: nextName,
+      email: String(decodedToken.email || "").trim().toLowerCase(),
+      role: nextRole,
+      city: nextCity,
+      phone: nextPhone,
+      emailVerified: Boolean(decodedToken.email_verified),
+      createdAt: new Date().toISOString()
+    };
+    db.users.push(user);
+    return { user, changed: true };
+  }
+
+  const before = JSON.stringify(user);
+  user.firebaseUid = decodedToken.uid;
+  user.name = nextName;
+  user.email = String(decodedToken.email || user.email || "").trim().toLowerCase();
+  user.role = nextRole;
+  user.city = nextCity;
+  user.phone = nextPhone;
+  user.emailVerified = Boolean(decodedToken.email_verified);
+  return { user, changed: before !== JSON.stringify(user) };
 }
 
 function validateRegistration(body) {
@@ -244,17 +323,28 @@ async function sendOtpEmail(to, otp) {
   return { sent: true };
 }
 
-function getAuthUser(req, db) {
+async function getAuthUser(req, db, profile = {}) {
   const auth = req.headers.authorization || "";
   const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
   if (!token) return null;
+
+  const firebase = initFirebaseAdmin();
+  if (firebase) {
+    try {
+      const decodedToken = await firebase.verifyIdToken(token);
+      const { user, changed } = upsertFirebaseUser(db, decodedToken, profile);
+      if (changed) writeDb(db);
+      return user;
+    } catch {}
+  }
+
   const session = db.sessions.find(item => item.token === token);
   if (!session || new Date(session.expiresAt) < new Date()) return null;
   return db.users.find(user => user.id === session.userId) || null;
 }
 
-function requireUser(req, res, db) {
-  const user = getAuthUser(req, db);
+async function requireUser(req, res, db, profile = {}) {
+  const user = await getAuthUser(req, db, profile);
   if (!user) {
     sendError(res, 401, "Please sign in to continue");
     return null;
@@ -262,8 +352,8 @@ function requireUser(req, res, db) {
   return user;
 }
 
-function requireAdmin(req, res, db) {
-  const user = requireUser(req, res, db);
+async function requireAdmin(req, res, db) {
+  const user = await requireUser(req, res, db);
   if (!user) return null;
   if (user.role !== "admin") {
     sendError(res, 403, "Admin access required");
@@ -331,6 +421,17 @@ function filterListings(listings, query) {
 
 async function handleApi(req, res, pathname, query) {
   const db = readDb();
+
+  if (req.method === "GET" && pathname === "/api/firebase-config") {
+    return sendJson(res, 200, {
+      config: {
+        apiKey: process.env.FIREBASE_API_KEY || "",
+        authDomain: process.env.FIREBASE_AUTH_DOMAIN || "",
+        projectId: process.env.FIREBASE_PROJECT_ID || "",
+        appId: process.env.FIREBASE_APP_ID || ""
+      }
+    });
+  }
 
   if (req.method === "POST" && pathname === "/api/auth/register") {
     return sendError(res, 410, "Use OTP verification to create an account");
@@ -434,8 +535,15 @@ async function handleApi(req, res, pathname, query) {
     return sendJson(res, 200, { token, user: publicUser(user) });
   }
 
+  if (req.method === "POST" && pathname === "/api/auth/session") {
+    const body = await parseBody(req);
+    const user = await requireUser(req, res, db, body);
+    if (!user) return;
+    return sendJson(res, 200, { user: publicUser(user) });
+  }
+
   if (req.method === "GET" && pathname === "/api/auth/me") {
-    const user = requireUser(req, res, db);
+    const user = await requireUser(req, res, db);
     if (!user) return;
     return sendJson(res, 200, { user: publicUser(user) });
   }
@@ -462,7 +570,7 @@ async function handleApi(req, res, pathname, query) {
   }
 
   if (req.method === "POST" && pathname === "/api/listings") {
-    const user = requireUser(req, res, db);
+    const user = await requireUser(req, res, db);
     if (!user) return;
     const body = await parseBody(req);
     const required = ["title", "category", "condition", "city", "description", "image"];
@@ -495,7 +603,7 @@ async function handleApi(req, res, pathname, query) {
   }
 
   if (req.method === "PATCH" && pathname.startsWith("/api/listings/")) {
-    const user = requireUser(req, res, db);
+    const user = await requireUser(req, res, db);
     if (!user) return;
     const id = pathname.split("/").pop();
     const listing = db.listings.find(item => item.id === id);
@@ -514,7 +622,7 @@ async function handleApi(req, res, pathname, query) {
   }
 
   if (req.method === "GET" && pathname === "/api/dashboard") {
-    const user = requireUser(req, res, db);
+    const user = await requireUser(req, res, db);
     if (!user) return;
     const myListings = db.listings.filter(item => item.sellerId === user.id);
     const myInquiries = db.inquiries.filter(item => item.buyerId === user.id || myListings.some(listing => listing.id === item.listingId));
@@ -535,7 +643,7 @@ async function handleApi(req, res, pathname, query) {
   }
 
   if (req.method === "POST" && pathname === "/api/inquiries") {
-    const user = requireUser(req, res, db);
+    const user = await requireUser(req, res, db);
     if (!user) return;
     const body = await parseBody(req);
     const listing = db.listings.find(item => item.id === body.listingId);
@@ -556,8 +664,8 @@ async function handleApi(req, res, pathname, query) {
   }
 
   if (req.method === "GET" && pathname === "/api/admin") {
-    const admin = requireAdmin(req, res, db);
-    if (!admin) return;
+    const adminUser = await requireAdmin(req, res, db);
+    if (!adminUser) return;
     return sendJson(res, 200, {
       users: db.users.map(publicUser),
       listings: db.listings.map(item => getListingView(item, db)),
@@ -573,8 +681,8 @@ async function handleApi(req, res, pathname, query) {
   }
 
   if (req.method === "PATCH" && pathname.startsWith("/api/admin/listings/")) {
-    const admin = requireAdmin(req, res, db);
-    if (!admin) return;
+    const adminUser = await requireAdmin(req, res, db);
+    if (!adminUser) return;
     const id = pathname.split("/").pop();
     const listing = db.listings.find(item => item.id === id);
     if (!listing) return sendError(res, 404, "Listing not found");

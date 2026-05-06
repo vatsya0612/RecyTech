@@ -1,0 +1,1 @@
+window.RECYTECH_FIREBASE_CONFIG = null;

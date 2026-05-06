@@ -607,6 +607,34 @@ th {
   letter-spacing: 6px;
 }
 
+.auth-divider {
+  position: relative;
+  margin: 6px 0;
+  text-align: center;
+}
+
+.auth-divider::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  border-top: 1px solid var(--line);
+}
+
+.auth-divider span {
+  position: relative;
+  padding: 0 12px;
+  background: white;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.social-btn {
+  width: 100%;
+}
+
 .alert {
   margin: 12px 0;
   padding: 12px 14px;

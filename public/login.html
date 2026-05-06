@@ -22,7 +22,7 @@
     <section class="card auth-panel">
       <aside class="auth-aside">
         <h1>RecyTech</h1>
-        <p>Login to buy or sell e-waste with a clean marketplace account.</p>
+        <p>Login to buy or sell e-waste using Firebase email authentication or Google sign-in.</p>
         <p><strong>Sell</strong><br>Post laptops, phones, parts, and recyclable electronics for direct buyers.</p>
         <p><strong>Buy</strong><br>Repair shops and recyclers can browse listings and contact sellers quickly.</p>
       </aside>
@@ -43,9 +43,14 @@
           <button class="btn green">Login</button>
           <a class="btn secondary" href="/create-account.html">New here? Create account</a>
         </div>
+        <div class="full auth-divider"><span>or continue with</span></div>
+        <div class="full">
+          <button class="btn secondary social-btn" type="button" data-google-login>Google</button>
+        </div>
       </form>
     </section>
   </main>
+  <script src="/js/firebase-config.js"></script>
   <script src="/js/api.js"></script>
   <script src="/js/auth.js"></script>
 </body>

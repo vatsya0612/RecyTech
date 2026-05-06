@@ -1,12 +1,10 @@
 const RecyTechAPI = (() => {
-  const TOKEN_KEY = "recytech_token";
   const USER_KEY = "recytech_user";
+  let auth = null;
+  let currentUser = null;
+  let readyPromise = null;
 
-  function getToken() {
-    return localStorage.getItem(TOKEN_KEY);
-  }
-
-  function getUser() {
+  function getStoredUser() {
     try {
       return JSON.parse(localStorage.getItem(USER_KEY));
     } catch {
@@ -14,14 +12,94 @@ const RecyTechAPI = (() => {
     }
   }
 
-  function setSession(data) {
-    localStorage.setItem(TOKEN_KEY, data.token);
-    localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+  function setStoredUser(user) {
+    currentUser = user || null;
+    if (user) {
+      localStorage.setItem(USER_KEY, JSON.stringify(user));
+    } else {
+      localStorage.removeItem(USER_KEY);
+    }
   }
 
   function clearSession() {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
+    setStoredUser(null);
+  }
+
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const existing = document.querySelector(`script[src="${src}"]`);
+      if (existing) {
+        existing.addEventListener("load", resolve, { once: true });
+        if (existing.dataset.loaded === "true") resolve();
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = src;
+      script.async = true;
+      script.onload = () => {
+        script.dataset.loaded = "true";
+        resolve();
+      };
+      script.onerror = () => reject(new Error(`Could not load script: ${src}`));
+      document.head.appendChild(script);
+    });
+  }
+
+  async function ready() {
+    if (readyPromise) return readyPromise;
+    readyPromise = (async () => {
+      await loadScript("https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js");
+      await loadScript("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js");
+
+      let config = window.RECYTECH_FIREBASE_CONFIG || null;
+      if (!config || !config.apiKey) {
+        try {
+          const response = await fetch("/api/firebase-config");
+          const data = await response.json();
+          config = data.config || null;
+          window.RECYTECH_FIREBASE_CONFIG = config;
+        } catch {}
+      }
+      if (!config || !config.apiKey) {
+        currentUser = getStoredUser();
+        return { firebaseReady: false };
+      }
+
+      if (!window.firebase.apps.length) {
+        window.firebase.initializeApp(config);
+      }
+      auth = window.firebase.auth();
+      auth.languageCode = "en";
+
+      await new Promise(resolve => {
+        const unsubscribe = auth.onAuthStateChanged(async firebaseUser => {
+          if (!firebaseUser) {
+            setStoredUser(null);
+            unsubscribe();
+            resolve();
+            return;
+          }
+          try {
+            await syncUser();
+          } catch {}
+          unsubscribe();
+          resolve();
+        });
+      });
+
+      return { firebaseReady: true };
+    })();
+    return readyPromise;
+  }
+
+  function getFirebaseAuth() {
+    return auth;
+  }
+
+  async function getIdToken() {
+    await ready();
+    if (!auth?.currentUser) return "";
+    return auth.currentUser.getIdToken();
   }
 
   async function request(path, options = {}) {
@@ -29,12 +107,48 @@ const RecyTechAPI = (() => {
       "Content-Type": "application/json",
       ...(options.headers || {})
     };
-    const token = getToken();
+    const token = await getIdToken();
     if (token) headers.Authorization = `Bearer ${token}`;
     const response = await fetch(path, { ...options, headers });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.error || "Something went wrong");
     return data;
+  }
+
+  async function syncUser(profile = {}) {
+    await ready();
+    if (!auth?.currentUser) {
+      setStoredUser(null);
+      return null;
+    }
+    const data = await request("/api/auth/session", {
+      method: "POST",
+      body: JSON.stringify(profile)
+    });
+    setStoredUser(data.user);
+    return data.user;
+  }
+
+  async function requireAuth() {
+    await ready();
+    if (!auth?.currentUser) {
+      location.href = `/login.html?next=${encodeURIComponent(location.pathname + location.search)}`;
+      return false;
+    }
+    return true;
+  }
+
+  function getUser() {
+    return currentUser || getStoredUser();
+  }
+
+  async function signOut() {
+    await ready();
+    if (auth) await auth.signOut();
+    clearSession();
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {}
   }
 
   function formatMoney(value) {
@@ -45,22 +159,13 @@ const RecyTechAPI = (() => {
     }).format(Number(value || 0));
   }
 
-  function requireAuth() {
-    if (!getToken()) {
-      location.href = `/login.html?next=${encodeURIComponent(location.pathname + location.search)}`;
-      return false;
-    }
-    return true;
-  }
-
-  function renderNav() {
-    const user = getUser();
+  async function renderNav() {
+    await ready();
     const mount = document.querySelector("[data-nav-actions]");
     if (!mount) return;
+    const user = getUser();
     if (!user) {
-      mount.innerHTML = `
-        <a class="btn secondary" href="/login.html">Login</a>
-      `;
+      mount.innerHTML = `<a class="btn secondary" href="/login.html">Login</a>`;
       return;
     }
     mount.innerHTML = `
@@ -69,24 +174,25 @@ const RecyTechAPI = (() => {
       <button class="btn" data-logout>Logout</button>
     `;
     mount.querySelector("[data-logout]")?.addEventListener("click", async () => {
-      try {
-        await request("/api/auth/logout", { method: "POST" });
-      } catch {}
-      clearSession();
+      await signOut();
       location.href = "/";
     });
   }
 
   return {
+    ready,
     request,
-    getToken,
     getUser,
-    setSession,
     clearSession,
     requireAuth,
     renderNav,
-    formatMoney
+    formatMoney,
+    getFirebaseAuth,
+    syncUser,
+    signOut
   };
 })();
 
-document.addEventListener("DOMContentLoaded", RecyTechAPI.renderNav);
+document.addEventListener("DOMContentLoaded", () => {
+  RecyTechAPI.renderNav();
+});

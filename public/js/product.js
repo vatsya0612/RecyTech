@@ -42,7 +42,7 @@ async function loadProduct() {
     `;
     document.querySelector("[data-inquiry-form]").addEventListener("submit", async event => {
       event.preventDefault();
-      if (!RecyTechAPI.requireAuth()) return;
+      if (!(await RecyTechAPI.requireAuth())) return;
       const payload = Object.fromEntries(new FormData(event.currentTarget).entries());
       payload.listingId = id;
       try {
@@ -61,4 +61,3 @@ async function loadProduct() {
 }
 
 document.addEventListener("DOMContentLoaded", loadProduct);
-

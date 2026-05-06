@@ -34,8 +34,8 @@ function readImageAsDataUrl(file) {
   });
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  if (!RecyTechAPI.requireAuth()) return;
+document.addEventListener("DOMContentLoaded", async () => {
+  if (!(await RecyTechAPI.requireAuth())) return;
   const form = document.querySelector("[data-sell-form]");
   const estimate = document.querySelector("[data-estimate]");
   const photoInput = form?.elements.photo;

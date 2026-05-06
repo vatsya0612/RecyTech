@@ -22,9 +22,9 @@
     <section class="card auth-panel">
       <aside class="auth-aside">
         <h1>Create Account</h1>
-        <p>Register your email with OTP verification before buying or selling on RecyTech.</p>
-        <p><strong>Step 1</strong><br>Fill your profile and request OTP.</p>
-        <p><strong>Step 2</strong><br>Enter the OTP sent to your email.</p>
+        <p>Create your RecyTech account with Firebase email authentication or Google OAuth.</p>
+        <p><strong>Step 1</strong><br>Create your account with email and password, or use Google sign-in.</p>
+        <p><strong>Step 2</strong><br>Firebase can send a verification email to confirm the account.</p>
       </aside>
       <form class="card-body form-grid auth-form" data-register-form>
         <div class="full">
@@ -60,29 +60,17 @@
           <input class="input" name="password" type="password" required minlength="6" placeholder="At least 6 characters">
         </div>
         <div class="full form-row">
-          <button class="btn green">Send OTP</button>
+          <button class="btn green">Create account</button>
           <a class="btn secondary" href="/login.html">Already have an account?</a>
         </div>
-      </form>
-
-      <form class="card-body form-grid auth-form auth-form-compact" data-otp-form hidden>
+        <div class="full auth-divider"><span>or continue with</span></div>
         <div class="full">
-          <h2>Verify your email</h2>
-          <p class="muted" data-otp-copy>Enter the 6-digit OTP sent to your email.</p>
-          <div data-otp-alert></div>
-        </div>
-        <input type="hidden" name="pendingId">
-        <div class="form-field full">
-          <label>OTP</label>
-          <input class="input otp-input" name="otp" required inputmode="numeric" maxlength="6" placeholder="123456">
-        </div>
-        <div class="full form-row">
-          <button class="btn green">Verify and create account</button>
-          <button class="btn secondary" type="button" data-edit-email>Edit details</button>
+          <button class="btn secondary social-btn" type="button" data-google-signup>Google</button>
         </div>
       </form>
     </section>
   </main>
+  <script src="/js/firebase-config.js"></script>
   <script src="/js/api.js"></script>
   <script src="/js/auth.js"></script>
 </body>

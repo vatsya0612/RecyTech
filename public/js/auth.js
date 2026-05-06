@@ -8,20 +8,34 @@ function getNextUrl() {
   return new URLSearchParams(location.search).get("next") || "/marketplace.html";
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+async function syncFirebaseProfile(profile = {}) {
+  const user = await RecyTechAPI.syncUser(profile);
+  if (!user) throw new Error("Could not load your RecyTech profile");
+  return user;
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  await RecyTechAPI.ready();
+  const auth = RecyTechAPI.getFirebaseAuth();
   const loginForm = document.querySelector("[data-login-form]");
   const registerForm = document.querySelector("[data-register-form]");
-  const otpForm = document.querySelector("[data-otp-form]");
+  const googleLoginButton = document.querySelector("[data-google-login]");
+  const googleSignupButton = document.querySelector("[data-google-signup]");
+
+  function requireFirebase() {
+    if (auth) return true;
+    const message = "Firebase is not configured yet. Add your Firebase web app config in /js/firebase-config.js.";
+    showAuthAlert("[data-auth-alert]", message, "error");
+    return false;
+  }
 
   loginForm?.addEventListener("submit", async event => {
     event.preventDefault();
+    if (!requireFirebase()) return;
     const payload = Object.fromEntries(new FormData(loginForm).entries());
     try {
-      const data = await RecyTechAPI.request("/api/auth/login", {
-        method: "POST",
-        body: JSON.stringify(payload)
-      });
-      RecyTechAPI.setSession(data);
+      await auth.signInWithEmailAndPassword(payload.email, payload.password);
+      await syncFirebaseProfile();
       location.href = getNextUrl();
     } catch (error) {
       showAuthAlert("[data-auth-alert]", error.message, "error");
@@ -30,45 +44,49 @@ document.addEventListener("DOMContentLoaded", () => {
 
   registerForm?.addEventListener("submit", async event => {
     event.preventDefault();
+    if (!requireFirebase()) return;
     const payload = Object.fromEntries(new FormData(registerForm).entries());
     try {
-      const data = await RecyTechAPI.request("/api/auth/request-otp", {
-        method: "POST",
-        body: JSON.stringify(payload)
+      const credential = await auth.createUserWithEmailAndPassword(payload.email, payload.password);
+      if (payload.name) {
+        await credential.user.updateProfile({ displayName: payload.name });
+      }
+      await credential.user.sendEmailVerification();
+      await syncFirebaseProfile({
+        name: payload.name,
+        role: payload.role,
+        city: payload.city,
+        phone: payload.phone
       });
-      registerForm.hidden = true;
-      otpForm.hidden = false;
-      otpForm.elements.pendingId.value = data.pendingId;
-      const otpHint = data.devOtp ? ` Test OTP: ${data.devOtp}.` : "";
-      document.querySelector("[data-otp-copy]").textContent = data.emailSent
-        ? `Enter the 6-digit OTP sent to ${data.email}.`
-        : `Enter the OTP for ${data.email}.${otpHint}`;
-      showAuthAlert(
-        "[data-otp-alert]",
-        data.emailSent ? "OTP sent successfully. Please check your inbox." : "Test OTP generated successfully."
-      );
+      showAuthAlert("[data-auth-alert]", "Account created. Firebase verification email has been sent to your inbox.");
+      setTimeout(() => {
+        location.href = getNextUrl();
+      }, 1000);
     } catch (error) {
       showAuthAlert("[data-auth-alert]", error.message, "error");
     }
   });
 
-  otpForm?.addEventListener("submit", async event => {
-    event.preventDefault();
-    const payload = Object.fromEntries(new FormData(otpForm).entries());
+  async function signInWithGoogle(profile = {}) {
+    if (!requireFirebase()) return;
     try {
-      const data = await RecyTechAPI.request("/api/auth/verify-otp", {
-        method: "POST",
-        body: JSON.stringify(payload)
-      });
-      RecyTechAPI.setSession(data);
+      const provider = new window.firebase.auth.GoogleAuthProvider();
+      await auth.signInWithPopup(provider);
+      await syncFirebaseProfile(profile);
       location.href = getNextUrl();
     } catch (error) {
-      showAuthAlert("[data-otp-alert]", error.message, "error");
+      showAuthAlert("[data-auth-alert]", error.message, "error");
     }
-  });
+  }
 
-  document.querySelector("[data-edit-email]")?.addEventListener("click", () => {
-    otpForm.hidden = true;
-    registerForm.hidden = false;
+  googleLoginButton?.addEventListener("click", () => signInWithGoogle());
+  googleSignupButton?.addEventListener("click", () => {
+    const form = registerForm ? new FormData(registerForm) : null;
+    signInWithGoogle({
+      name: form?.get("name") || "",
+      role: form?.get("role") || "buyer",
+      city: form?.get("city") || "",
+      phone: form?.get("phone") || ""
+    });
   });
 });
