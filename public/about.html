@@ -2,60 +2,210 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>About | RecyTech</title>
-  <link rel="stylesheet" href="/css/styles.css">
+
+  <link rel="stylesheet" href="/css/styles.css" />
+
+  <!-- GOOGLE FONT -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
   <script src="/js/theme-toggle.js"></script>
 </head>
 
 <body>
+
+  <!-- NAVBAR -->
   <header class="topbar">
     <div class="container nav">
-      <a class="brand" href="/"><img src="/assets/logo.svg" alt="RecyTech"></a>
+
+      <a class="brand" href="/">
+        <img src="/assets/logo.svg" alt="RecyTech">
+      </a>
+
       <nav class="nav-links">
         <a href="/marketplace.html">Marketplace</a>
         <a href="/sell.html">Sell E-Waste</a>
         <a href="/about.html">About</a>
       </nav>
+
       <div class="nav-actions" data-nav-actions>
-        <button class="theme-toggle" data-theme-toggle title="Switch to Dark Mode">🌙</button>
+        <button class="theme-toggle" data-theme-toggle title="Switch Theme">
+          🌙
+        </button>
       </div>
+
     </div>
   </header>
+
+  <!-- MAIN -->
   <main>
-    <section class="page-hero">
-      <div class="container page-title">
-        <h1>About RecyTech</h1>
-        <p>A full-stack project designed to reduce electronic waste by turning unused devices into reusable components,
-          resale value, and verified recycling supply.</p>
+
+    <!-- HERO SECTION -->
+    <section class="modern-hero">
+
+      <div class="hero-left">
+
+        <p class="hero-tag">SUSTAINABLE FUTURE</p>
+
+        <h1>
+          Turning <span>E-Waste</span><br>
+          Into Opportunity ♻️
+        </h1>
+
+        <p class="hero-text">
+          RecyTech helps people recycle, reuse and resell electronics
+          responsibly while supporting a cleaner and greener future.
+        </p>
+
+        <div class="hero-buttons">
+
+          <a href="/marketplace.html" class="primary-btn">
+            Explore Marketplace
+          </a>
+
+          <a href="/sell.html" class="secondary-btn">
+            Sell E-Waste
+          </a>
+
+        </div>
+
       </div>
-    </section>
-    <section class="section">
-      <div class="container grid-3">
-        <article class="panel">
-          <h2>Problem</h2>
-          <p class="muted">People throw away electronics because they do not know the resale or recycling value. Repair
-            shops struggle to source affordable old components.</p>
-        </article>
-        <article class="panel">
-          <h2>Solution</h2>
-          <p class="muted">RecyTech connects sellers, repair shops, refurbishers, and recyclers through verified
-            listings, price estimates, and inquiries.</p>
-        </article>
-        <article class="panel">
-          <h2>Impact</h2>
-          <p class="muted">The platform encourages reuse before recycling, helps sellers earn real money, and supports
-            responsible e-waste management in India.</p>
-        </article>
+
+      <div class="hero-right">
+
+        <img src="/assets/pcb.svg" alt="Eco Tech">
+
       </div>
+
     </section>
+
+    <!-- STATS -->
+    <section class="stats-section">
+
+      <div class="stats-card">
+        <h2>1200+</h2>
+        <p>Devices Recycled</p>
+      </div>
+
+      <div class="stats-card">
+        <h2>500+</h2>
+        <p>Components Reused</p>
+      </div>
+
+      <div class="stats-card">
+        <h2>2 Tons</h2>
+        <p>E-Waste Reduced</p>
+      </div>
+
+      <div class="stats-card">
+        <h2>350+</h2>
+        <p>Active Users</p>
+      </div>
+
+    </section>
+
+    <!-- CARDS -->
+    <section class="modern-cards">
+
+      <div class="modern-card">
+
+        <div class="icon-box">♻️</div>
+
+        <h2>Problem</h2>
+
+        <p>
+          People throw away electronics without understanding
+          their resale or recycling value.
+        </p>
+
+      </div>
+
+      <div class="modern-card">
+
+        <div class="icon-box">💡</div>
+
+        <h2>Solution</h2>
+
+        <p>
+          RecyTech connects users with recyclers,
+          repair shops and refurbishers.
+        </p>
+
+      </div>
+
+      <div class="modern-card">
+
+        <div class="icon-box">🌍</div>
+
+        <h2>Impact</h2>
+
+        <p>
+          Reduce e-waste while promoting reuse
+          and sustainable technology.
+        </p>
+
+      </div>
+
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="how-section">
+
+      <h2>How RecyTech Works</h2>
+
+      <div class="how-grid">
+
+        <div class="how-card">
+          <div class="step">1</div>
+          <h3>Upload Device</h3>
+        </div>
+
+        <div class="how-card">
+          <div class="step">2</div>
+          <h3>Get Estimate</h3>
+        </div>
+
+        <div class="how-card">
+          <div class="step">3</div>
+          <h3>Connect Recycler</h3>
+        </div>
+
+        <div class="how-card">
+          <div class="step">4</div>
+          <h3>Earn & Save Planet</h3>
+        </div>
+
+      </div>
+
+    </section>
+
   </main>
+
+  <!-- FOOTER -->
   <footer class="footer">
-    <div class="container">Built for resume, interviews, and real-world sustainability impact.</div>
+
+    <div class="container">
+
+      <h2>RecyTech ♻️</h2>
+
+      <p>
+        Building a cleaner future through smarter e-waste management.
+      </p>
+
+    </div>
+
   </footer>
+
   <script src="/js/firebase-config.js"></script>
   <script src="/js/api.js"></script>
+
 </body>
 
 </html>

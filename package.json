@@ -18,6 +18,8 @@
   "author": "Aditya Vatsya",
   "license": "MIT",
   "dependencies": {
-    "firebase-admin": "^13.8.0"
+    "firebase-admin": "^13.8.0",
+    "framer-motion": "^12.38.0",
+    "lucide-react": "^1.14.0"
   }
 }
