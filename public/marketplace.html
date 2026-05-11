@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Marketplace | RecyTech</title>
   <link rel="stylesheet" href="/css/styles.css">
+  <script src="/js/theme-toggle.js"></script>
 </head>
+
 <body>
   <header class="topbar">
     <div class="container nav">
@@ -15,7 +18,9 @@
         <a href="/sell.html">Sell E-Waste</a>
         <a href="/about.html">About</a>
       </nav>
-      <div class="nav-actions" data-nav-actions></div>
+      <div class="nav-actions" data-nav-actions>
+        <button class="theme-toggle" data-theme-toggle title="Switch to Dark Mode">🌙</button>
+      </div>
     </div>
   </header>
   <main>
@@ -31,11 +36,24 @@
           <input class="input" name="q" placeholder="Search laptop, mobile board, charger...">
           <select class="select" name="category">
             <option value="">All categories</option>
-            <option>Laptop</option><option>Mobile</option><option>Desktop</option><option>Monitor</option><option>Motherboard/PCB</option><option>RAM</option><option>Battery</option><option>Charger</option><option>Keyboard</option><option>Bulk Scrap</option><option>Other</option>
+            <option>Laptop</option>
+            <option>Mobile</option>
+            <option>Desktop</option>
+            <option>Monitor</option>
+            <option>Motherboard/PCB</option>
+            <option>RAM</option>
+            <option>Battery</option>
+            <option>Charger</option>
+            <option>Keyboard</option>
+            <option>Bulk Scrap</option>
+            <option>Other</option>
           </select>
           <select class="select" name="condition">
             <option value="">Any condition</option>
-            <option>Working</option><option>Repairable</option><option>For Parts</option><option>Scrap</option>
+            <option>Working</option>
+            <option>Repairable</option>
+            <option>For Parts</option>
+            <option>Scrap</option>
           </select>
           <input class="input" name="city" placeholder="City">
           <button class="btn blue">Search</button>
@@ -48,10 +66,13 @@
       </div>
     </section>
   </main>
-  <footer class="footer"><div class="container">RecyTech marketplace for e-waste and reusable electronic parts.</div></footer>
+  <footer class="footer">
+    <div class="container">RecyTech marketplace for e-waste and reusable electronic parts.</div>
+  </footer>
   <script src="/js/firebase-config.js"></script>
   <script src="/js/api.js"></script>
   <script src="/js/main.js"></script>
   <script src="/js/marketplace.js"></script>
 </body>
+
 </html>

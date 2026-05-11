@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin | RecyTech</title>
   <link rel="stylesheet" href="/css/styles.css">
+  <script src="/js/theme-toggle.js"></script>
 </head>
+
 <body>
   <header class="topbar">
     <div class="container nav">
@@ -15,7 +18,9 @@
         <a href="/sell.html">Sell E-Waste</a>
         <a href="/about.html">About</a>
       </nav>
-      <div class="nav-actions" data-nav-actions></div>
+      <div class="nav-actions" data-nav-actions>
+        <button class="theme-toggle" data-theme-toggle title="Switch to Dark Mode">🌙</button>
+      </div>
     </div>
   </header>
   <main>
@@ -30,7 +35,15 @@
         <div class="metric-grid" data-admin-stats></div>
         <div class="panel table-wrap" style="margin-top:28px">
           <table>
-            <thead><tr><th>Listing</th><th>Seller</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Listing</th>
+                <th>Seller</th>
+                <th>Price</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
             <tbody data-admin-listings></tbody>
           </table>
         </div>
@@ -41,4 +54,5 @@
   <script src="/js/api.js"></script>
   <script src="/js/admin.js"></script>
 </body>
+
 </html>

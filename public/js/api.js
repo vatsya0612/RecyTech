@@ -58,7 +58,7 @@ const RecyTechAPI = (() => {
           const data = await response.json();
           config = data.config || null;
           window.RECYTECH_FIREBASE_CONFIG = config;
-        } catch {}
+        } catch { }
       }
       if (!config || !config.apiKey) {
         currentUser = getStoredUser();
@@ -81,7 +81,7 @@ const RecyTechAPI = (() => {
           }
           try {
             await syncUser();
-          } catch {}
+          } catch { }
           unsubscribe();
           resolve();
         });
@@ -148,7 +148,7 @@ const RecyTechAPI = (() => {
     clearSession();
     try {
       await fetch("/api/auth/logout", { method: "POST" });
-    } catch {}
+    } catch { }
   }
 
   function formatMoney(value) {
@@ -164,19 +164,30 @@ const RecyTechAPI = (() => {
     const mount = document.querySelector("[data-nav-actions]");
     if (!mount) return;
     const user = getUser();
+    const themeToggle = `<button class="theme-toggle" data-theme-toggle title="Switch to Dark Mode">🌙</button>`;
     if (!user) {
-      mount.innerHTML = `<a class="btn secondary" href="/login.html">Login</a>`;
-      return;
+      mount.innerHTML = `${themeToggle}<a class="btn secondary" href="/login.html">Login</a>`;
+    } else {
+      mount.innerHTML = `
+        ${themeToggle}
+        <a class="btn secondary" href="/marketplace.html">${user.name.split(" ")[0]}</a>
+        ${user.role === "admin" ? '<a class="btn blue" href="/admin.html">Admin</a>' : ""}
+        <button class="btn" data-logout>Logout</button>
+      `;
+      mount.querySelector("[data-logout]")?.addEventListener("click", async () => {
+        await signOut();
+        location.href = "/";
+      });
     }
-    mount.innerHTML = `
-      <a class="btn secondary" href="/marketplace.html">${user.name.split(" ")[0]}</a>
-      ${user.role === "admin" ? '<a class="btn blue" href="/admin.html">Admin</a>' : ""}
-      <button class="btn" data-logout>Logout</button>
-    `;
-    mount.querySelector("[data-logout]")?.addEventListener("click", async () => {
-      await signOut();
-      location.href = "/";
-    });
+    // Attach event listener to the newly created theme toggle button
+    const themeBtn = mount.querySelector("[data-theme-toggle]");
+    if (themeBtn && window.ThemeToggle && window.ThemeToggle.toggle) {
+      themeBtn.addEventListener("click", window.ThemeToggle.toggle);
+      // Update button text to match current theme
+      const savedTheme = localStorage.getItem('recytech-theme') || 'light';
+      themeBtn.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+      themeBtn.title = savedTheme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+    }
   }
 
   return {

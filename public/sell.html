@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sell E-Waste | RecyTech</title>
   <link rel="stylesheet" href="/css/styles.css">
+  <script src="/js/theme-toggle.js"></script>
 </head>
+
 <body>
   <header class="topbar">
     <div class="container nav">
@@ -15,14 +18,17 @@
         <a href="/sell.html">Sell E-Waste</a>
         <a href="/about.html">About</a>
       </nav>
-      <div class="nav-actions" data-nav-actions></div>
+      <div class="nav-actions" data-nav-actions>
+        <button class="theme-toggle" data-theme-toggle title="Switch to Dark Mode">🌙</button>
+      </div>
     </div>
   </header>
   <main>
     <section class="page-hero">
       <div class="container page-title">
         <h1>Sell E-Waste</h1>
-        <p>Post your old electronics, repairable parts, or recyclable scrap so repair shops and recyclers can buy directly from you.</p>
+        <p>Post your old electronics, repairable parts, or recyclable scrap so repair shops and recyclers can buy
+          directly from you.</p>
       </div>
     </section>
     <section class="section">
@@ -30,7 +36,8 @@
         <aside class="panel">
           <h2>Estimated Value</h2>
           <div class="price" data-estimate>₹0</div>
-          <p class="muted">The estimate updates from category, condition, age, and quantity. You can still set your own expected price.</p>
+          <p class="muted">The estimate updates from category, condition, age, and quantity. You can still set your own
+            expected price.</p>
         </aside>
         <form class="panel form-grid" data-sell-form>
           <div class="form-field">
@@ -44,13 +51,26 @@
           <div class="form-field">
             <label>Category</label>
             <select class="select" name="category" required>
-              <option>Laptop</option><option>Mobile</option><option>Desktop</option><option>Monitor</option><option>Motherboard/PCB</option><option>RAM</option><option>Battery</option><option>Charger</option><option>Keyboard</option><option>Bulk Scrap</option><option>Other</option>
+              <option>Laptop</option>
+              <option>Mobile</option>
+              <option>Desktop</option>
+              <option>Monitor</option>
+              <option>Motherboard/PCB</option>
+              <option>RAM</option>
+              <option>Battery</option>
+              <option>Charger</option>
+              <option>Keyboard</option>
+              <option>Bulk Scrap</option>
+              <option>Other</option>
             </select>
           </div>
           <div class="form-field">
             <label>Condition</label>
             <select class="select" name="condition" required>
-              <option>Working</option><option>Repairable</option><option>For Parts</option><option>Scrap</option>
+              <option>Working</option>
+              <option>Repairable</option>
+              <option>For Parts</option>
+              <option>Scrap</option>
             </select>
           </div>
           <div class="form-field">
@@ -75,11 +95,13 @@
           </div>
           <div class="form-field">
             <label>Product photo</label>
-            <input class="input" name="photo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" required>
+            <input class="input" name="photo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml"
+              required>
           </div>
           <div class="form-field">
             <label>Photo preview</label>
-            <img class="upload-preview" src="/assets/device-placeholder.svg" alt="Selected product preview" data-photo-preview>
+            <img class="upload-preview" src="/assets/device-placeholder.svg" alt="Selected product preview"
+              data-photo-preview>
           </div>
           <div class="form-field full">
             <label>Reusable components</label>
@@ -87,7 +109,8 @@
           </div>
           <div class="form-field full">
             <label>Description</label>
-            <textarea class="textarea" name="description" required placeholder="Mention what works, what is damaged, and what buyers can reuse."></textarea>
+            <textarea class="textarea" name="description" required
+              placeholder="Mention what works, what is damaged, and what buyers can reuse."></textarea>
           </div>
           <div class="full">
             <button class="btn green">Post listing for sale</button>
@@ -101,4 +124,5 @@
   <script src="/js/api.js"></script>
   <script src="/js/sell.js"></script>
 </body>
+
 </html>
