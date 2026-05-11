@@ -29,12 +29,27 @@ document.addEventListener("DOMContentLoaded", async () => {
     return false;
   }
 
+  // Handle verification error from redirect
+  const params = new URLSearchParams(location.search);
+  if (params.get("error") === "verify") {
+    showAuthAlert("[data-auth-alert]", "Please verify your email address before logging in.", "error");
+  }
+
   loginForm?.addEventListener("submit", async event => {
     event.preventDefault();
     if (!requireFirebase()) return;
     const payload = Object.fromEntries(new FormData(loginForm).entries());
     try {
-      await auth.signInWithEmailAndPassword(payload.email, payload.password);
+      const credential = await auth.signInWithEmailAndPassword(payload.email, payload.password);
+      
+      // Check if email is verified
+      if (!credential.user.emailVerified) {
+        await credential.user.sendEmailVerification();
+        await auth.signOut();
+        showAuthAlert("[data-auth-alert]", "Please verify your email address. A new verification link has been sent to your inbox.", "error");
+        return;
+      }
+
       await syncFirebaseProfile();
       location.href = getNextUrl();
     } catch (error) {
@@ -52,16 +67,22 @@ document.addEventListener("DOMContentLoaded", async () => {
         await credential.user.updateProfile({ displayName: payload.name });
       }
       await credential.user.sendEmailVerification();
+      
+      // Sync profile but we won't log them in yet
       await syncFirebaseProfile({
         name: payload.name,
         role: payload.role,
         city: payload.city,
         phone: payload.phone
       });
-      showAuthAlert("[data-auth-alert]", "Account created. Firebase verification email has been sent to your inbox.");
-      setTimeout(() => {
-        location.href = getNextUrl();
-      }, 1000);
+
+      // Sign out immediately so they have to verify first
+      await auth.signOut();
+
+      showAuthAlert("[data-auth-alert]", "Account created successfully! A verification email has been sent to " + payload.email + ". Please verify your email before logging in.");
+      
+      // Clear the form
+      registerForm.reset();
     } catch (error) {
       showAuthAlert("[data-auth-alert]", error.message, "error");
     }

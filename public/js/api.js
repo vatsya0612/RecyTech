@@ -135,6 +135,7 @@ const RecyTechAPI = (() => {
       location.href = `/login.html?next=${encodeURIComponent(location.pathname + location.search)}`;
       return false;
     }
+    
     return true;
   }
 

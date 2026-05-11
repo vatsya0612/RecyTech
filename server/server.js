@@ -352,6 +352,14 @@ async function requireUser(req, res, db, profile = {}) {
   return user;
 }
 
+function requireVerified(user, res) {
+  if (user.firebaseUid && !user.emailVerified) {
+    sendError(res, 403, "Please verify your email address before performing this action");
+    return false;
+  }
+  return true;
+}
+
 async function requireAdmin(req, res, db) {
   const user = await requireUser(req, res, db);
   if (!user) return null;
@@ -572,6 +580,7 @@ async function handleApi(req, res, pathname, query) {
   if (req.method === "POST" && pathname === "/api/listings") {
     const user = await requireUser(req, res, db);
     if (!user) return;
+    if (!requireVerified(user, res)) return;
     const body = await parseBody(req);
     const required = ["title", "category", "condition", "city", "description", "image"];
     if (required.some(field => !String(body[field] || "").trim())) {
@@ -645,6 +654,7 @@ async function handleApi(req, res, pathname, query) {
   if (req.method === "POST" && pathname === "/api/inquiries") {
     const user = await requireUser(req, res, db);
     if (!user) return;
+    if (!requireVerified(user, res)) return;
     const body = await parseBody(req);
     const listing = db.listings.find(item => item.id === body.listingId);
     if (!listing) return sendError(res, 404, "Listing not found");
