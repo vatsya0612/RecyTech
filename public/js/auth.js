@@ -40,17 +40,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   loginForm?.addEventListener("submit", async event => {
     event.preventDefault();
-    const auth = await getAuth();
-    if (!requireFirebase(auth)) return;
-    const payload = Object.fromEntries(new FormData(loginForm).entries());
     try {
+      const auth = await getAuth();
+      if (!requireFirebase(auth)) return;
+      
+      const payload = Object.fromEntries(new FormData(loginForm).entries());
       const credential = await auth.signInWithEmailAndPassword(payload.email, payload.password);
       
       // Check if email is verified
       if (!credential.user.emailVerified) {
         await credential.user.sendEmailVerification();
         await auth.signOut();
-        showAuthAlert("[data-auth-alert]", "Please verify your email address. A new verification link has been sent to your inbox.", "error");
+        showAuthAlert("[data-auth-alert]", "Verify through email first to proceed further. A new verification link has been sent to your inbox.", "error");
         return;
       }
 
@@ -63,17 +64,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   registerForm?.addEventListener("submit", async event => {
     event.preventDefault();
-    const auth = await getAuth();
-    if (!requireFirebase(auth)) return;
-    const payload = Object.fromEntries(new FormData(registerForm).entries());
     try {
+      const auth = await getAuth();
+      if (!requireFirebase(auth)) return;
+      
+      const payload = Object.fromEntries(new FormData(registerForm).entries());
       const credential = await auth.createUserWithEmailAndPassword(payload.email, payload.password);
+      
       if (payload.name) {
         await credential.user.updateProfile({ displayName: payload.name });
       }
+      
       await credential.user.sendEmailVerification();
       
-      // Sync profile but we won't log them in yet
+      // Sync profile - this is allowed for unverified users now
       await syncFirebaseProfile({
         name: payload.name,
         role: payload.role,
@@ -81,12 +85,11 @@ document.addEventListener("DOMContentLoaded", () => {
         phone: payload.phone
       });
 
-      // Sign out immediately so they have to verify first
+      // Sign out so they must verify
       await auth.signOut();
 
-      showAuthAlert("[data-auth-alert]", "Account created successfully! A verification email has been sent to " + payload.email + ". Please verify your email before logging in.");
+      showAuthAlert("[data-auth-alert]", "Account created! Verify through email first to proceed further. A verification link has been sent to " + payload.email);
       
-      // Clear the form
       registerForm.reset();
     } catch (error) {
       showAuthAlert("[data-auth-alert]", error.message, "error");
