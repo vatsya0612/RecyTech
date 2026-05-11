@@ -14,15 +14,18 @@ async function syncFirebaseProfile(profile = {}) {
   return user;
 }
 
-document.addEventListener("DOMContentLoaded", async () => {
-  await RecyTechAPI.ready();
-  const auth = RecyTechAPI.getFirebaseAuth();
+document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.querySelector("[data-login-form]");
   const registerForm = document.querySelector("[data-register-form]");
   const googleLoginButton = document.querySelector("[data-google-login]");
   const googleSignupButton = document.querySelector("[data-google-signup]");
 
-  function requireFirebase() {
+  async function getAuth() {
+    await RecyTechAPI.ready();
+    return RecyTechAPI.getFirebaseAuth();
+  }
+
+  function requireFirebase(auth) {
     if (auth) return true;
     const message = "Firebase is not configured yet. Add your Firebase web app config in /js/firebase-config.js.";
     showAuthAlert("[data-auth-alert]", message, "error");
@@ -37,7 +40,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   loginForm?.addEventListener("submit", async event => {
     event.preventDefault();
-    if (!requireFirebase()) return;
+    const auth = await getAuth();
+    if (!requireFirebase(auth)) return;
     const payload = Object.fromEntries(new FormData(loginForm).entries());
     try {
       const credential = await auth.signInWithEmailAndPassword(payload.email, payload.password);
@@ -59,7 +63,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   registerForm?.addEventListener("submit", async event => {
     event.preventDefault();
-    if (!requireFirebase()) return;
+    const auth = await getAuth();
+    if (!requireFirebase(auth)) return;
     const payload = Object.fromEntries(new FormData(registerForm).entries());
     try {
       const credential = await auth.createUserWithEmailAndPassword(payload.email, payload.password);
@@ -89,7 +94,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   async function signInWithGoogle(profile = {}) {
-    if (!requireFirebase()) return;
+    const auth = await getAuth();
+    if (!requireFirebase(auth)) return;
     try {
       const provider = new window.firebase.auth.GoogleAuthProvider();
       await auth.signInWithPopup(provider);
